@@ -1,24 +1,38 @@
 import java.util.Scanner;
 
-public class Tetris{
-    static class Figure{
+public class Tetris {
+    static class Figure {
         int[][] blocks = {
-                {1,1},
-                {1,1}
+                {1, 1},
+                {1, 1}
         };
-        int x=4;
-        int y=0;
-        void left() {x--;}
-        void right() {x++;}
-        void down() {y++;}
-        void rotate() {x--;y--;}
-    }
-    static class Field{
-        int height =10;
-        int width=10;
-        int[][] board=new int[height][width];
+        int x = 4;
+        int y = 0;
 
-        boolean canMove(Figure f,int dx,int dy) {
+        void left() {
+            x--;
+        }
+
+        void right() {
+            x++;
+        }
+
+        void down() {
+            y++;
+        }
+
+        void rotate() {
+            x--;
+            y--;
+        }
+    }
+
+    static class Field {
+        int height = 10;
+        int width = 10;
+        int[][] board = new int[height][width];
+
+        boolean canMove(Figure f, int dx, int dy) {
             for (int i = 0; i < f.blocks.length; i++) {
                 for (int j = 0; j < f.blocks[i].length; j++) {
                     if (f.blocks[i][j] == 1) {
@@ -32,72 +46,108 @@ public class Tetris{
             }
             return true;
         }
-        void place(Figure f,int dx,int dy) {
+
+        void place(Figure f, int dx, int dy) {
             for (int i = 0; i < f.blocks.length; i++) {
                 for (int j = 0; j < f.blocks[i].length; j++) {
                     if (f.blocks[i][j] == 1) {
-                        board[f.y+1][f.x+1]=1;
+                        board[f.y + 1][f.x + 1] = 1;
                     }
                 }
             }
         }
-        void removeFullLines(){
-            for (int i = height-1; i>=0;i--) {
-                boolean full=true;
-                for (int j=0;j<width;j++){
-                    if (board[i][j]==0){
-                        full=false;
+
+        void removeFullLines() {
+            for (int i = height - 1; i >= 0; i--) {
+                boolean full = true;
+                for (int j = 0; j < width; j++) {
+                    if (board[i][j] == 0) {
+                        full = false;
                         break;
                     }
                 }
-                if (full){
-                    for (int k=1;k>0;k--){
-                        board [k]=board [k-1].clone();
+                if (full) {
+                    for (int k = 1; k > 0; k--) {
+                        board[k] = board[k - 1].clone();
                     }
-                    board[0]=new int[width];
+                    board[0] = new int[width];
                     i++;
                 }
             }
         }
-        void draw(Figure f){
-            for (int i = 0; i <height; i++) {
-                for (int j = 0; j <width; j++) {
-                    boolean isFigure=false;
 
-                    for (int fi=0;fi<f.blocks.length;fi++) {
-                        for (int fj=0;fj<f.blocks[fi].length;fj++) {
-                            if (f.blocks[fi][fj]==1 &&
-                                    f.y+fi==1 &&
-                                    f.x+fj==j){
+        void draw(Figure f) {
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    boolean isFigure = false;
+
+                    for (int fi = 0; fi < f.blocks.length; fi++) {
+                        for (int fj = 0; fj < f.blocks[fi].length; fj++) {
+                            if (f.blocks[fi][fj] == 1 &&
+                                    f.y + fi == 1 &&
+                                    f.x + fj == j) {
                                 System.out.print("$");
-                                isFigure=true;
+                                isFigure = true;
                             }
                         }
                     }
-                    if (!isFigure){
-                        System.out.print(board[i][j]==1?"$" : "_");
+                    if (!isFigure) {
+                        System.out.print(board[i][j] == 1 ? "$" : "_");
                     }
                 }
                 System.out.println();
             }
         }
     }
+
     public static void main(String[] args) throws Exception {
-        Scanner sc=new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
 
         System.out.println("Play");
         System.out.println("Exit");
 
-        int choise=sc.nextInt();
+        int choise = sc.nextInt();
         sc.nextLine();
 
-        if (choise==1){
+        if (choise == 1) {
             gameLoop();
         } else {
             System.out.println("Exit the game");
         }
     }
+
     static void gameLoop() throws Exception {
         System.out.println("Game started");
+
+        Field field = new Field();
+        Figure figure = new Figure();
+        try (Scanner sc = new Scanner(System.in)) {
+
+                while (true) {
+                    field.draw(figure);
+                    System.out.println("a-left d-right s-down q-exit");
+
+                    if (sc.hasNext()) {
+                        char c = sc.next().charAt(0);
+                        if (c == 'a' && field.canMove(figure, -1, 0))
+                            figure.left();
+                        if (c == 'd' && field.canMove(figure, 1, 0))
+                            figure.right();
+                        if (c == 's' && field.canMove(figure, 0, 1))
+                            figure.down();
+                        if (c == 'q') break;
+                    }
+                    Thread.sleep(500);
+
+                    if (field.canMove(figure, 0, 1)) {
+                        figure.down();
+                    } else {
+                        field.draw(figure);
+                        field.removeFullLines();
+                        figure = new Figure();
+                    }
+                    System.out.println();
+                }
+            }
+        }
     }
-}
